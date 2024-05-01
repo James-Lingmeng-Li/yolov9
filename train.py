@@ -244,7 +244,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
     scheduler.last_epoch = start_epoch - 1  # do not move
     scaler = torch.cuda.amp.GradScaler(enabled=amp)
     stopper, stop = EarlyStopping(patience=opt.patience), False
-    compute_loss = FocalLoss(model)  # init loss class
+    compute_loss = FocalLoss(nn.BCEWithLogitsLoss())  # init loss class
     callbacks.run('on_train_start')
     LOGGER.info(f'Compute loss {compute_loss}')
     LOGGER.info(f'Image sizes {imgsz} train, {imgsz} val\n'
