@@ -29,6 +29,7 @@ from utils.general import (LOGGER, ROOT, Profile, check_requirements, check_suff
                            xywh2xyxy, xyxy2xywh, yaml_load)
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import copy_attr, smart_inference_mode
+from modules.coordinate_attention import CoordinateAttention
 
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
@@ -289,11 +290,15 @@ class Bottleneck(nn.Module):
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = Conv(c1, c_, k[0], 1)
+        self.coord_att = CoordinateAttention(c_)  # Apply Coordinate Attention
         self.cv2 = Conv(c_, c2, k[1], 1, g=g)
         self.add = shortcut and c1 == c2
 
     def forward(self, x):
-        return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
+        out = self.cv1(x)
+        out = self.coord_att(out)  # Apply Coordinate Attention
+        out = self.cv2(out)
+        return x + out if self.add else out
 
 
 class RepNBottleneck(nn.Module):

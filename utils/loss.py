@@ -361,3 +361,21 @@ class ComputeLoss_NEW:
             # print(f'targets-unique {n1}-{n2} diff={n1-n2}')
 
         return tcls, tbox, indices
+
+def bbox_loss(predictions, targets):
+    """Custom Smooth L1 Loss for bounding box regression."""
+    return F.smooth_l1_loss(predictions, targets, reduction='mean')
+
+
+class CustomYOLOLoss(nn.Module):
+    """Combines Focal Loss, Smooth L1 Loss, and BCE Loss for object detection."""
+    def __init__(self):
+        super(CustomYOLOLoss, self).__init__()
+        self.focal_loss = FocalLoss()
+        self.bce_loss = nn.BCEWithLogitsLoss()
+
+    def forward(self, class_preds, class_targets, bbox_preds, bbox_targets, obj_preds, obj_targets):
+        class_loss = self.focal_loss(class_preds, class_targets)
+        bbox_regression_loss = bbox_loss(bbox_preds, bbox_targets)
+        objectness_loss = self.bce_loss(obj_preds, obj_targets)
+        return class_loss + bbox_regression_loss + objectness_loss
