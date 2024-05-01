@@ -36,7 +36,7 @@ class FocalLoss(nn.Module):
         self.loss_fcn = loss_fcn  # must be nn.BCEWithLogitsLoss()
         self.gamma = gamma
         self.alpha = alpha
-        self.reduction = loss_fcn.reduction
+        self.reduction = "mean"
         self.loss_fcn.reduction = "none"  # required to apply FL to each element
 
     def forward(self, pred, true):
